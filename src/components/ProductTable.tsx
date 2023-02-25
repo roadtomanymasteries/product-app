@@ -20,18 +20,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
 import { ProductActionTypes, ProductFormFields } from './ProductForm';
 import { visuallyHidden } from '@mui/utils';
 import { v4 as uuidv4 } from 'uuid';
 import {
   getProducts,
-  getProductById,
   deleteProductById,
   updateProductById,
   addNewProduct,
   Product,
 } from '../apis/productsApis';
 import { ProductForm } from './ProductForm';
+import DialogTitle from '@mui/material/DialogTitle';
 
 interface Data {
   id: string;
@@ -376,7 +377,6 @@ export default function ProductTable() {
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty productList.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - productList.length) : 0;
 
@@ -497,22 +497,26 @@ export default function ProductTable() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
 
-        <Dialog
-          open={modalAction === 'ADD' || modalAction === 'EDIT'}
-          onClose={closeProductModal}
-
-          // loading={loading}
-        >
-          <Box sx={{ mt: 1 }}>
+        <Dialog open={modalAction === 'ADD'} onClose={closeProductModal}>
+          <DialogTitle>Add Product</DialogTitle>
+          <DialogContent sx={{ mt: 1 }}>
             <ProductForm
-              onSubmit={
-                modalAction === 'ADD' ? handleAddProduct : handleUpdateProduct
-              }
+              onSubmit={handleAddProduct}
               formId={'AddProductFormId'}
-              product={selectedProduct as Product}
-              loading={false}
+              onCancel={closeProductModal}
             />
-          </Box>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={modalAction === 'EDIT'} onClose={closeProductModal}>
+          <DialogTitle>Edit product details</DialogTitle>
+          <DialogContent sx={{ mt: 1 }}>
+            <ProductForm
+              onSubmit={handleUpdateProduct}
+              formId={'UpdateProductFormId'}
+              product={selectedProduct as Product}
+              onCancel={closeProductModal}
+            />
+          </DialogContent>
         </Dialog>
       </Paper>
     </Box>
