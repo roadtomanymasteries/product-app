@@ -1,5 +1,10 @@
 describe('template spec', () => {
   beforeEach(() => {
+    //@ts-ignore
+    cy.loginToAuth0(
+      Cypress.env('auth0_username'),
+      Cypress.env('auth0_password'),
+    );
     cy.visit('http://127.0.0.1:5173/api/products');
     cy.request('POST', 'http://localhost:6060/api/products/reseed');
   });
