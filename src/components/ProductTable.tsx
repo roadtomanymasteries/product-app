@@ -33,6 +33,13 @@ import {
 } from '../apis/productsApis';
 import { ProductForm } from './ProductForm';
 import DialogTitle from '@mui/material/DialogTitle';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 
 interface Data {
   id: string;
@@ -267,6 +274,9 @@ export default function ProductTable() {
   const [modalAction, setModalAction] = useState<ProductActionTypes | null>(
     null,
   );
+  const [filterType, setFilterType] = useState('');
+  const [searchFilterTerm, setSearchFilterTerm] = useState('');
+  let types = ['description', 'model', 'brand'];
 
   const loadProducts = useCallback(async () => {
     const result = await getProducts();
@@ -375,6 +385,27 @@ export default function ProductTable() {
     loadProducts();
   };
 
+  const handleProductFilterSelect = (e: SelectChangeEvent) => {
+    setFilterType(e.target.value);
+  };
+
+  const handleFilterClick = async () => {
+    if (!filterType || !searchFilterTerm) {
+      return;
+    }
+    const result = await getProducts({
+      type: filterType,
+      value: searchFilterTerm,
+    });
+    setProductList(result);
+  };
+
+  const handleReset = async () => {
+    setFilterType('');
+    setSearchFilterTerm('');
+    loadProducts();
+  };
+
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   const emptyRows =
@@ -389,20 +420,55 @@ export default function ProductTable() {
         />
 
         <TableContainer>
-          <IconButton
-            onClick={(e) => {
-              setModalAction('ADD');
-            }}
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="space-between"
+            sx={{ minHeight: '5rem' }}
           >
-            <Typography
-              sx={{ display: 'flex', alignItems: 'center' }}
-              color="inherit"
-              variant="subtitle1"
-              component="div"
+            <IconButton
+              onClick={(e) => {
+                setModalAction('ADD');
+              }}
             >
-              <AddIcon /> Add a new product
-            </Typography>
-          </IconButton>
+              <Typography
+                sx={{ display: 'flex', alignItems: 'center' }}
+                color="inherit"
+                variant="subtitle1"
+                component="div"
+              >
+                <AddIcon /> Add a new product
+              </Typography>
+            </IconButton>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <FormControl>
+                <InputLabel id="product-filter-select">Filter Type</InputLabel>
+                <Select
+                  id="product-filter-select"
+                  value={filterType}
+                  label="filterTypes"
+                  onChange={handleProductFilterSelect}
+                  sx={{ width: '12rem', height: '3rem' }}
+                >
+                  {types.map((type) => {
+                    return <MenuItem value={type}>{type}</MenuItem>;
+                  })}
+                </Select>
+              </FormControl>
+              <TextField
+                size="small"
+                value={searchFilterTerm}
+                onChange={(e) => setSearchFilterTerm(e.target.value)}
+              />
+
+              <Button variant="contained" onClick={handleFilterClick}>
+                Filter
+              </Button>
+              <Button variant="contained" onClick={handleReset}>
+                Reset
+              </Button>
+            </Stack>
+          </Stack>
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
