@@ -1,4 +1,3 @@
-import axios, { AxiosError } from 'axios';
 import { HttpClient } from '.';
 
 export interface Product {
@@ -8,31 +7,33 @@ export interface Product {
   brand: string;
 }
 
-export const getProducts = async () => {
-  try {
-    const response = await HttpClient.get('/products');
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error as string);
+interface FilterArgsTypes {
+  type?: string;
+  value?: string;
+}
+
+export const getProducts = async (filterArgs: FilterArgsTypes = {}) => {
+  const { type, value } = filterArgs;
+  const params = new URLSearchParams();
+  if (type) {
+    params.append('type', type);
   }
+  if (value) {
+    params.append('value', value);
+  }
+
+  const response = await HttpClient.get(`/products`, { params });
+  return response.data;
 };
 
 export const getProductById = async (productId: string) => {
-  try {
-    const response = await HttpClient.get(`/products/${productId}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(error as string);
-  }
+  const response = await HttpClient.get(`/products/${productId}`);
+  return response.data;
 };
 
 export const deleteProductById = async (productId: string) => {
-  try {
-    const response = await HttpClient.delete(`/products/${productId}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(error as string);
-  }
+  const response = await HttpClient.delete(`/products/${productId}`);
+  return response.data;
 };
 
 export const updateProductById = async ({
@@ -42,19 +43,11 @@ export const updateProductById = async ({
   productId: string;
   args: Product;
 }) => {
-  try {
-    const response = await HttpClient.put(`/products/${productId}`, args);
-    return response.data;
-  } catch (error) {
-    throw new Error(error as string);
-  }
+  const response = await HttpClient.put(`/products/${productId}`, args);
+  return response.data;
 };
 
-export const addNewProduct = async (args: Product): Promise<Product> => {
-  try {
-    const response = await HttpClient.post('/products', args);
-    return response.data;
-  } catch (error) {
-    throw new Error(error as string);
-  }
+export const addNewProduct = async (args: Product) => {
+  const response = await HttpClient.post('/products', args);
+  return response.data;
 };

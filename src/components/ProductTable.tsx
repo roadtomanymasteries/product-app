@@ -40,6 +40,8 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import { Link } from 'react-router-dom';
+import { withAuthenticationRequired } from '@auth0/auth0-react';
 
 interface Data {
   id: string;
@@ -48,21 +50,11 @@ interface Data {
   model: string;
 }
 
-function createData(
-  id: string,
-  description: string,
-  brand: string,
-  model: string,
-): Data {
-  return {
-    id,
-    description,
-    brand,
-    model,
-  };
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+const descendingComparator = <T extends unknown>(
+  a: T,
+  b: T,
+  orderBy: keyof T,
+) => {
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -70,30 +62,26 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     return 1;
   }
   return 0;
-}
+};
 
 type Order = 'asc' | 'desc';
 
-function getComparator<Key extends keyof any>(
+const getComparator = <Key extends keyof any>(
   order: Order,
   orderBy: Key,
-): (
+): ((
   a: { [key in Key]: number | string },
   b: { [key in Key]: number | string },
-) => number {
+) => number) => {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
-}
+};
 
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
-function stableSort<T>(
+const stableSort = <T extends unknown>(
   array: readonly T[],
   comparator: (a: T, b: T) => number,
-) {
+) => {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -103,7 +91,7 @@ function stableSort<T>(
     return a[1] - b[1];
   });
   return stabilizedThis.map((el) => el[0]);
-}
+};
 
 interface HeadCell {
   disablePadding: boolean;
@@ -151,7 +139,7 @@ interface EnhancedTableProps {
   rowCount: number;
 }
 
-function EnhancedTableHead(props: EnhancedTableProps) {
+const EnhancedTableHead = (props: EnhancedTableProps) => {
   const {
     onSelectAllClick,
     order,
@@ -174,9 +162,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all desserts',
-            }}
           />
         </TableCell>
         {headCells.map((headCell) => (
@@ -203,14 +188,14 @@ function EnhancedTableHead(props: EnhancedTableProps) {
       </TableRow>
     </TableHead>
   );
-}
+};
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
   handleDelete: () => void;
 }
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
+const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const { numSelected, handleDelete } = props;
 
   return (
@@ -261,15 +246,15 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       )}
     </Toolbar>
   );
-}
+};
 
-export default function ProductTable() {
-  const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('brand');
-  const [selected, setSelected] = React.useState<string[]>([]);
+const ProductTable = () => {
+  const [order, setOrder] = useState<Order>('asc');
+  const [orderBy, setOrderBy] = useState<keyof Data>('brand');
+  const [selected, setSelected] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [productList, setProductList] = useState<Product[]>([]);
   const [modalAction, setModalAction] = useState<ProductActionTypes | null>(
     null,
@@ -400,7 +385,7 @@ export default function ProductTable() {
     setProductList(result);
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     setFilterType('');
     setSearchFilterTerm('');
     loadProducts();
@@ -427,7 +412,7 @@ export default function ProductTable() {
             sx={{ minHeight: '5rem' }}
           >
             <IconButton
-              onClick={(e) => {
+              onClick={() => {
                 setModalAction('ADD');
               }}
             >
@@ -459,6 +444,7 @@ export default function ProductTable() {
                 size="small"
                 value={searchFilterTerm}
                 onChange={(e) => setSearchFilterTerm(e.target.value)}
+                id="search-filter-term"
               />
 
               <Button variant="contained" onClick={handleFilterClick}>
@@ -516,7 +502,12 @@ export default function ProductTable() {
                         align="left"
                         sx={{ width: '20%' }}
                       >
-                        {row.id}
+                        <Link
+                          to={row.id}
+                          style={{ textDecoration: 'none', color: 'black' }}
+                        >
+                          {row.id}
+                        </Link>
                       </TableCell>
                       <TableCell
                         align="left"
@@ -584,7 +575,14 @@ export default function ProductTable() {
             />
           </DialogContent>
         </Dialog>
+        <Typography sx={{ p: 2 }}>
+          * To view individual product details, click on a Product Id
+        </Typography>
       </Paper>
     </Box>
   );
-}
+};
+
+export default withAuthenticationRequired(ProductTable, {
+  onRedirecting: () => <div>loading...</div>,
+});

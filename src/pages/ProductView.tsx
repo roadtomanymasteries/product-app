@@ -1,20 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { getProductById } from '../apis/productsApis';
 import { Product } from '../apis/productsApis';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-export const ProductView = () => {
+import { withAuthenticationRequired } from '@auth0/auth0-react';
+
+const ProductView = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product>({} as Product);
 
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
     const result = await getProductById(id as string);
     setProduct(result);
-  };
+  }, [id]);
 
   useEffect(() => {
     loadProduct();
@@ -22,13 +24,13 @@ export const ProductView = () => {
 
   return (
     <Paper sx={{ m: 20 }}>
-      <Button variant="contained" sx={{ mb: 1 }}>
-        <Link
-          to="/api/products"
-          style={{ textDecoration: 'none', color: 'white' }}
-        >
-          Return to product management console
-        </Link>
+      <Button
+        variant="contained"
+        sx={{ mb: 1 }}
+        component={Link}
+        to="/api/products"
+      >
+        Return to product management console
       </Button>
 
       <Box sx={{ minHeight: '20rem' }}>
@@ -55,3 +57,7 @@ export const ProductView = () => {
     </Paper>
   );
 };
+
+export default withAuthenticationRequired(ProductView, {
+  onRedirecting: () => <div>loading...</div>,
+});
