@@ -9,9 +9,9 @@ export const Auth0ProviderWithNavigate = ({
 }) => {
   const navigate = useNavigate();
 
-  const domain = 'dev-i7vb0lm1gq0qi1e3.us.auth0.com';
-  const clientId = 'oyEdaoG9lx52t1iN4FOh3qOrqYkUsAd4';
-  const redirectUri = 'http://127.0.0.1:5173/callback';
+  const domain = import.meta.env.VITE_DOMAIN;
+  const clientId = import.meta.env.VITE_CLIENT_ID;
+  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
 
   if (!(domain && clientId && redirectUri)) {
     return null;
