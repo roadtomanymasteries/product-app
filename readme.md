@@ -34,8 +34,8 @@ Integration and E2E testing was achieved via Cypress. The lack of complex logic 
 
 The Project consists of two repositories; product-app and product-server. You can clone the repositories via the below links:
 
-[product-app repository](https://github.com/roadtomanymasteries/product-app)
-[product-server repository](https://github.com/roadtomanymasteries/product-server)
+- [product-app repository](https://github.com/roadtomanymasteries/product-app)
+- [product-server repository](https://github.com/roadtomanymasteries/product-server)
 
 Install dependencies via running the following command for each repositories
 
